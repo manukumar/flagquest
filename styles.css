@@ -111,13 +111,9 @@ body {
     padding: 25px;
     border-radius: 15px;
     border: 2px solid #e2e8f0;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.info-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-}
+/* Removed hover effects to prevent boxes from appearing as buttons */
 
 .info-card h3 {
     color: #4a5568;
