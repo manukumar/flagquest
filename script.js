@@ -109,6 +109,12 @@ class FlagQuest {
                 }
             }
             
+            // Handle next question button
+            const nextBtn = e.target.closest('#next-question-btn');
+            if (nextBtn && this.gameState === 'game') {
+                this.nextQuestion();
+            }
+            
             // Handle leaderboard tab clicks
             const tabBtn = e.target.closest('.tab-btn');
             if (tabBtn) {
@@ -278,24 +284,8 @@ class FlagQuest {
         // Update score
         this.updateScore(correct);
         
-        // Show feedback with smooth transition
+        // Show feedback with next button
         this.showFeedback(correct, selectedOption);
-        
-        // Smooth transition to next question
-        setTimeout(() => {
-            this.hideFeedback();
-            
-            // Wait for feedback to fade out before showing next question
-            setTimeout(() => {
-                this.player.currentQuestion++;
-                
-                if (this.player.currentQuestion >= this.player.questionsPerRound) {
-                    this.showResults();
-                } else {
-                    this.askQuestion();
-                }
-            }, 500); // Wait for feedback fade-out animation
-        }, 2500); // Show feedback for 2.5 seconds instead of 3
     }
     
     updateScore(correct) {
@@ -317,6 +307,7 @@ class FlagQuest {
         
         const feedbackIcon = feedback.querySelector('.feedback-icon');
         const feedbackText = feedback.querySelector('.feedback-text');
+        const nextButton = document.getElementById('next-question-btn');
         
         if (feedbackIcon && feedbackText) {
             if (correct) {
@@ -337,14 +328,63 @@ class FlagQuest {
         if (regionInfo) regionInfo.textContent = this.currentCorrectFlag.region;
         if (populationInfo) populationInfo.textContent = this.currentCorrectFlag.population;
         
+        // Update next button text based on question number
+        if (nextButton) {
+            if (this.player.currentQuestion + 1 >= this.player.questionsPerRound) {
+                nextButton.textContent = 'See Results';
+            } else {
+                nextButton.textContent = 'Next Question';
+            }
+            // Ensure button is hidden initially
+            nextButton.classList.remove('show');
+            console.log('Button found, hidden initially');
+        } else {
+            console.log('Next button not found in showFeedback');
+        }
+        
         feedback.classList.add('show');
+        
+        // Show next button after 1 second
+        setTimeout(() => {
+            if (nextButton) {
+                nextButton.classList.add('show');
+                console.log('Next button should now be visible');
+                console.log('Button classes:', nextButton.className);
+                console.log('Button opacity:', window.getComputedStyle(nextButton).opacity);
+            } else {
+                console.log('Next button not found');
+            }
+        }, 1000);
     }
     
     hideFeedback() {
         const feedback = document.getElementById('feedback');
+        const nextButton = document.getElementById('next-question-btn');
+        
         if (feedback) {
             feedback.classList.remove('show');
         }
+        
+        // Hide the next button when feedback is hidden
+        if (nextButton) {
+            nextButton.classList.remove('show');
+        }
+    }
+    
+    nextQuestion() {
+        // Hide feedback with smooth transition
+        this.hideFeedback();
+        
+        // Wait for feedback to fade out before showing next question
+        setTimeout(() => {
+            this.player.currentQuestion++;
+            
+            if (this.player.currentQuestion >= this.player.questionsPerRound) {
+                this.showResults();
+            } else {
+                this.askQuestion();
+            }
+        }, 500); // Wait for feedback fade-out animation
     }
     
     updateGameDisplay() {
