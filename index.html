@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlagQuest - Flag Identification Game</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Welcome Screen -->
+        <div id="welcome-screen" class="screen active">
+            <div class="welcome-content">
+                <h1 class="game-title">🏁 FlagQuest 🏁</h1>
+                <div class="flag-preview">
+                    <span class="flag-emoji">🇺🇸</span>
+                    <span class="flag-emoji">🇬🇧</span>
+                    <span class="flag-emoji">🇯🇵</span>
+                    <span class="flag-emoji">🇧🇷</span>
+                    <span class="flag-emoji">🇦🇺</span>
+                </div>
+                <p class="welcome-text">Test your knowledge of world flags!</p>
+                
+                <div class="welcome-layout">
+                    <div class="welcome-left">
+                        <div class="game-info">
+                            <div class="info-card">
+                                <h3>🎯 Objective</h3>
+                                <p>Identify which country each flag belongs to</p>
+                            </div>
+                            <div class="info-card">
+                                <h3>📝 How to Play</h3>
+                                <p>Choose the correct country from 4 options</p>
+                            </div>
+                            <div class="info-card">
+                                <h3>🏆 Features</h3>
+                                <p>185 countries, scoring, and country facts</p>
+                            </div>
+                        </div>
+                        <div class="player-input">
+                            <input type="text" id="player-name" placeholder="Enter your name" maxlength="20">
+                            <button id="start-game" class="btn btn-primary">Start Game</button>
+                        </div>
+                    </div>
+                    
+                    <div class="welcome-right">
+                        <div class="leaderboard-section">
+                            <h3>🏆 Leaderboard</h3>
+                            <div class="leaderboard-tabs">
+                                <button class="tab-btn active" data-tab="accuracy">Best Accuracy</button>
+                                <button class="tab-btn" data-tab="streak">Best Streak</button>
+                                <button class="tab-btn" data-tab="recent">Recent Games</button>
+                            </div>
+                            <div class="leaderboard-content">
+                                <div id="accuracy-leaderboard" class="leaderboard active">
+                                    <div class="leaderboard-list" id="accuracy-list">
+                                        <!-- Accuracy leaderboard entries will be populated here -->
+                                    </div>
+                                </div>
+                                <div id="streak-leaderboard" class="leaderboard">
+                                    <div class="leaderboard-list" id="streak-list">
+                                        <!-- Streak leaderboard entries will be populated here -->
+                                    </div>
+                                </div>
+                                <div id="recent-leaderboard" class="leaderboard">
+                                    <div class="leaderboard-list" id="recent-list">
+                                        <!-- Recent games will be populated here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="screen">
+            <div class="game-header">
+                <div class="player-info">
+                    <span id="player-display"></span>
+                </div>
+                <div class="game-stats">
+                    <div class="stat">
+                        <span class="stat-label">Score</span>
+                        <span id="current-score">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Question</span>
+                        <span id="question-number">1</span>/10
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Streak</span>
+                        <span id="current-streak">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="game-content">
+                <div class="flag-display">
+                    <div id="flag-emoji" class="flag-emoji-large"></div>
+                    <h2 class="question-text">Which country does this flag belong to?</h2>
+                </div>
+
+                <div class="options-container">
+                    <div class="options-grid">
+                        <button class="option-btn" data-index="0">
+                            <span class="option-text"></span>
+                        </button>
+                        <button class="option-btn" data-index="1">
+                            <span class="option-text"></span>
+                        </button>
+                        <button class="option-btn" data-index="2">
+                            <span class="option-text"></span>
+                        </button>
+                        <button class="option-btn" data-index="3">
+                            <span class="option-text"></span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="feedback" id="feedback">
+                    <div class="feedback-content">
+                        <div class="feedback-icon"></div>
+                        <div class="feedback-text"></div>
+                        <div class="country-info">
+                            <div class="info-item">
+                                <span class="info-label">📍 Capital:</span>
+                                <span class="info-value" id="capital-info"></span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">🌍 Region:</span>
+                                <span class="info-value" id="region-info"></span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">👥 Population:</span>
+                                <span class="info-value" id="population-info"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="results-screen" class="screen">
+            <div class="results-content">
+                <h1 class="results-title">🏁 Round Complete! 🏁</h1>
+                
+                <div class="results-layout">
+                    <div class="results-left">
+                        <div class="results-summary">
+                            <div class="result-card">
+                                <h3>Round Performance</h3>
+                                <div class="result-stats">
+                                    <div class="result-stat">
+                                        <span class="stat-number" id="round-correct">0</span>
+                                        <span class="stat-label">Correct</span>
+                                    </div>
+                                    <div class="result-stat">
+                                        <span class="stat-number" id="round-accuracy">0%</span>
+                                        <span class="stat-label">Accuracy</span>
+                                    </div>
+                                    <div class="result-stat">
+                                        <span class="stat-number" id="best-streak">0</span>
+                                        <span class="stat-label">Best Streak</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="result-card">
+                                <h3>Overall Performance</h3>
+                                <div class="result-stats">
+                                    <div class="result-stat">
+                                        <span class="stat-number" id="total-correct">0</span>
+                                        <span class="stat-label">Total Correct</span>
+                                    </div>
+                                    <div class="result-stat">
+                                        <span class="stat-number" id="total-questions">0</span>
+                                        <span class="stat-label">Total Questions</span>
+                                    </div>
+                                    <div class="result-stat">
+                                        <span class="stat-number" id="overall-accuracy">0%</span>
+                                        <span class="stat-label">Overall Accuracy</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="performance-message" id="performance-message"></div>
+                        <div class="action-buttons">
+                            <button id="play-again" class="btn btn-primary">Play Another Round</button>
+                            <button id="new-game" class="btn btn-secondary">New Game</button>
+                        </div>
+                    </div>
+                    
+                    <div class="results-right">
+                        <div class="leaderboard-section">
+                            <h3>🏆 Updated Leaderboard</h3>
+                            <div class="leaderboard-tabs">
+                                <button class="tab-btn active" data-tab="accuracy">Best Accuracy</button>
+                                <button class="tab-btn" data-tab="streak">Best Streak</button>
+                                <button class="tab-btn" data-tab="recent">Recent Games</button>
+                            </div>
+                            <div class="leaderboard-content">
+                                <div id="results-accuracy-leaderboard" class="leaderboard active">
+                                    <div class="leaderboard-list" id="results-accuracy-list">
+                                        <!-- Accuracy leaderboard entries will be populated here -->
+                                    </div>
+                                </div>
+                                <div id="results-streak-leaderboard" class="leaderboard">
+                                    <div class="leaderboard-list" id="results-streak-list">
+                                        <!-- Streak leaderboard entries will be populated here -->
+                                    </div>
+                                </div>
+                                <div id="results-recent-leaderboard" class="leaderboard">
+                                    <div class="leaderboard-list" id="results-recent-list">
+                                        <!-- Recent games will be populated here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 
