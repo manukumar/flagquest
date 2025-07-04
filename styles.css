@@ -459,20 +459,32 @@ body {
     padding: 25px;
     margin-top: 20px;
     border: 2px solid #e2e8f0;
-    transform: translateY(20px);
+    transform: translateY(20px) scale(0.95);
     transition: opacity 0.4s ease, visibility 0.4s ease, transform 0.4s ease;
+    max-height: 0;
+    overflow: hidden;
 }
 
 .feedback.show {
     opacity: 1;
     visibility: visible;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
+    max-height: 600px;
+    transition: opacity 0.5s ease, visibility 0.5s ease, transform 0.8s ease, max-height 1s ease;
 }
 
 /* Removed slideUp animation - now using CSS transitions for smoother feedback */
 
 .feedback-content {
     text-align: center;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.6s ease 0.3s, transform 0.6s ease 0.3s;
+}
+
+.feedback.show .feedback-content {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .feedback-icon {
@@ -492,6 +504,14 @@ body {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 15px;
     text-align: left;
+    opacity: 0;
+    transform: translateY(15px);
+    transition: opacity 0.7s ease 0.6s, transform 0.7s ease 0.6s;
+}
+
+.feedback.show .country-info {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .info-item {
@@ -516,6 +536,14 @@ body {
 .feedback-actions {
     margin-top: 25px;
     text-align: center;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.6s ease 0.8s, transform 0.6s ease 0.8s;
+}
+
+.feedback.show .feedback-actions {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .feedback-actions .btn {

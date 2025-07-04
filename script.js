@@ -252,6 +252,7 @@ class FlagQuest {
             }
         });
         
+        // Ensure feedback window is collapsed and hidden
         this.hideFeedback();
         this.updateGameDisplay();
     }
@@ -337,22 +338,23 @@ class FlagQuest {
             }
             // Ensure button is hidden initially
             nextButton.classList.remove('show');
-            console.log('Button found, hidden initially');
-        } else {
-            console.log('Next button not found in showFeedback');
         }
         
+        // Start with compact state and expand smoothly
+        feedback.style.transform = 'translateY(20px) scale(0.8)';
+        feedback.style.maxHeight = '0';
         feedback.classList.add('show');
+        
+        // Trigger expansion animation
+        setTimeout(() => {
+            feedback.style.transform = 'translateY(0) scale(1)';
+            feedback.style.maxHeight = '600px';
+        }, 50);
         
         // Show next button after 1 second
         setTimeout(() => {
             if (nextButton) {
                 nextButton.classList.add('show');
-                console.log('Next button should now be visible');
-                console.log('Button classes:', nextButton.className);
-                console.log('Button opacity:', window.getComputedStyle(nextButton).opacity);
-            } else {
-                console.log('Next button not found');
             }
         }, 1000);
     }
@@ -362,6 +364,9 @@ class FlagQuest {
         const nextButton = document.getElementById('next-question-btn');
         
         if (feedback) {
+            // Collapse the feedback window back to small size
+            feedback.style.transform = 'translateY(20px) scale(0.8)';
+            feedback.style.maxHeight = '0';
             feedback.classList.remove('show');
         }
         
@@ -375,7 +380,7 @@ class FlagQuest {
         // Hide feedback with smooth transition
         this.hideFeedback();
         
-        // Wait for feedback to fade out before showing next question
+        // Wait for feedback to collapse before showing next question
         setTimeout(() => {
             this.player.currentQuestion++;
             
@@ -384,7 +389,7 @@ class FlagQuest {
             } else {
                 this.askQuestion();
             }
-        }, 500); // Wait for feedback fade-out animation
+        }, 600); // Wait for feedback collapse animation
     }
     
     updateGameDisplay() {
