@@ -379,6 +379,7 @@ body {
     margin-bottom: 20px;
     filter: drop-shadow(4px 4px 8px rgba(0, 0, 0, 0.2));
     animation: flagWave 3s ease-in-out infinite;
+    transition: opacity 0.2s ease;
 }
 
 @keyframes flagWave {
@@ -412,7 +413,7 @@ body {
     font-weight: 500;
     color: #4a5568;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.3s ease, background 0.4s ease, border-color 0.4s ease, color 0.4s ease;
     font-family: inherit;
     text-align: left;
 }
@@ -451,29 +452,24 @@ body {
 
 /* Feedback */
 .feedback {
-    display: none;
+    opacity: 0;
+    visibility: hidden;
     background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
     border-radius: 15px;
     padding: 25px;
     margin-top: 20px;
     border: 2px solid #e2e8f0;
-    animation: slideUp 0.5s ease;
+    transform: translateY(20px);
+    transition: opacity 0.4s ease, visibility 0.4s ease, transform 0.4s ease;
 }
 
 .feedback.show {
-    display: block;
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
 }
 
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
+/* Removed slideUp animation - now using CSS transitions for smoother feedback */
 
 .feedback-content {
     text-align: center;

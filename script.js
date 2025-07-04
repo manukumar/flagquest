@@ -216,13 +216,24 @@ class FlagQuest {
         this.currentCorrectFlag = currentFlag;
         this.currentOptions = this.getRandomOptions(currentFlag);
         
-        // Display flag
+        // Clear previous button states with smooth transition
+        document.querySelectorAll('.option-btn').forEach(btn => {
+            btn.classList.remove('correct', 'incorrect');
+            btn.style.pointerEvents = 'auto';
+        });
+        
+        // Display flag with smooth transition
         const flagElement = document.getElementById('flag-emoji');
         if (flagElement) {
-            flagElement.textContent = currentFlag.flag;
+            // Add a brief fade effect for the flag change
+            flagElement.style.opacity = '0.7';
+            setTimeout(() => {
+                flagElement.textContent = currentFlag.flag;
+                flagElement.style.opacity = '1';
+            }, 100);
         }
         
-        // Display options
+        // Display options with smooth transition
         this.currentOptions.forEach((option, index) => {
             const btn = document.querySelector(`[data-index="${index}"]`);
             if (btn) {
@@ -267,19 +278,24 @@ class FlagQuest {
         // Update score
         this.updateScore(correct);
         
-        // Show feedback
+        // Show feedback with smooth transition
         this.showFeedback(correct, selectedOption);
         
-        // Wait and continue to next question
+        // Smooth transition to next question
         setTimeout(() => {
-            this.player.currentQuestion++;
+            this.hideFeedback();
             
-            if (this.player.currentQuestion >= this.player.questionsPerRound) {
-                this.showResults();
-            } else {
-                this.askQuestion();
-            }
-        }, 3000);
+            // Wait for feedback to fade out before showing next question
+            setTimeout(() => {
+                this.player.currentQuestion++;
+                
+                if (this.player.currentQuestion >= this.player.questionsPerRound) {
+                    this.showResults();
+                } else {
+                    this.askQuestion();
+                }
+            }, 500); // Wait for feedback fade-out animation
+        }, 2500); // Show feedback for 2.5 seconds instead of 3
     }
     
     updateScore(correct) {
