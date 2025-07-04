@@ -216,6 +216,14 @@ class FlagQuest {
         this.currentCorrectFlag = currentFlag;
         this.currentOptions = this.getRandomOptions(currentFlag);
         
+        // Add fade-in animation for new question
+        const gameContent = document.querySelector('.game-content');
+        if (gameContent) {
+            gameContent.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            gameContent.style.opacity = '0';
+            gameContent.style.transform = 'translateY(10px)';
+        }
+        
         // Display flag
         const flagElement = document.getElementById('flag-emoji');
         if (flagElement) {
@@ -237,6 +245,19 @@ class FlagQuest {
         
         this.hideFeedback();
         this.updateGameDisplay();
+        
+        // Animate the content back in
+        setTimeout(() => {
+            if (gameContent) {
+                gameContent.style.opacity = '1';
+                gameContent.style.transform = 'translateY(0)';
+                
+                // Clean up styles after animation
+                setTimeout(() => {
+                    gameContent.style.transition = '';
+                }, 300);
+            }
+        }, 50);
     }
     
     handleAnswer(selectedIndex) {
@@ -270,16 +291,21 @@ class FlagQuest {
         // Show feedback
         this.showFeedback(correct, selectedOption);
         
-        // Wait and continue to next question
+        // Smooth transition to next question
         setTimeout(() => {
-            this.player.currentQuestion++;
+            this.hideFeedback();
             
-            if (this.player.currentQuestion >= this.player.questionsPerRound) {
-                this.showResults();
-            } else {
-                this.askQuestion();
-            }
-        }, 3000);
+            // Add a brief pause before showing next question
+            setTimeout(() => {
+                this.player.currentQuestion++;
+                
+                if (this.player.currentQuestion >= this.player.questionsPerRound) {
+                    this.showResults();
+                } else {
+                    this.askQuestion();
+                }
+            }, 500); // 500ms pause for smooth transition
+        }, 2500); // Show feedback for 2.5 seconds instead of 3
     }
     
     updateScore(correct) {
@@ -327,7 +353,18 @@ class FlagQuest {
     hideFeedback() {
         const feedback = document.getElementById('feedback');
         if (feedback) {
-            feedback.classList.remove('show');
+            // Add fade-out animation
+            feedback.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            feedback.style.opacity = '0';
+            feedback.style.transform = 'translateY(-10px)';
+            
+            // Remove show class after animation completes
+            setTimeout(() => {
+                feedback.classList.remove('show');
+                feedback.style.transition = '';
+                feedback.style.opacity = '';
+                feedback.style.transform = '';
+            }, 300);
         }
     }
     
