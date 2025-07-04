@@ -109,6 +109,12 @@ class FlagQuest {
                 }
             }
             
+            // Handle next question button
+            const nextBtn = e.target.closest('#next-question');
+            if (nextBtn && this.gameState === 'game') {
+                this.nextQuestion();
+            }
+            
             // Handle leaderboard tab clicks
             const tabBtn = e.target.closest('.tab-btn');
             if (tabBtn) {
@@ -246,6 +252,13 @@ class FlagQuest {
             }
         });
         
+        // Ensure next button is hidden for new questions
+        const nextButton = document.getElementById('next-question');
+        if (nextButton) {
+            nextButton.style.opacity = '0';
+            nextButton.style.pointerEvents = 'none';
+        }
+        
         this.hideFeedback();
         this.updateGameDisplay();
     }
@@ -278,24 +291,8 @@ class FlagQuest {
         // Update score
         this.updateScore(correct);
         
-        // Show feedback with smooth transition
+        // Show feedback with next button
         this.showFeedback(correct, selectedOption);
-        
-        // Smooth transition to next question
-        setTimeout(() => {
-            this.hideFeedback();
-            
-            // Wait for feedback to fade out before showing next question
-            setTimeout(() => {
-                this.player.currentQuestion++;
-                
-                if (this.player.currentQuestion >= this.player.questionsPerRound) {
-                    this.showResults();
-                } else {
-                    this.askQuestion();
-                }
-            }, 500); // Wait for feedback fade-out animation
-        }, 2500); // Show feedback for 2.5 seconds instead of 3
     }
     
     updateScore(correct) {
@@ -311,12 +308,29 @@ class FlagQuest {
         }
     }
     
+    nextQuestion() {
+        // Hide feedback with smooth transition
+        this.hideFeedback();
+        
+        // Wait for feedback to fade out before showing next question
+        setTimeout(() => {
+            this.player.currentQuestion++;
+            
+            if (this.player.currentQuestion >= this.player.questionsPerRound) {
+                this.showResults();
+            } else {
+                this.askQuestion();
+            }
+        }, 500); // Wait for feedback fade-out animation
+    }
+    
     showFeedback(correct, selectedOption) {
         const feedback = document.getElementById('feedback');
         if (!feedback) return;
         
         const feedbackIcon = feedback.querySelector('.feedback-icon');
         const feedbackText = feedback.querySelector('.feedback-text');
+        const nextButton = document.getElementById('next-question');
         
         if (feedbackIcon && feedbackText) {
             if (correct) {
@@ -337,13 +351,36 @@ class FlagQuest {
         if (regionInfo) regionInfo.textContent = this.currentCorrectFlag.region;
         if (populationInfo) populationInfo.textContent = this.currentCorrectFlag.population;
         
+        // Show feedback immediately
         feedback.classList.add('show');
+        
+        // Hide next button initially
+        if (nextButton) {
+            nextButton.style.opacity = '0';
+            nextButton.style.pointerEvents = 'none';
+        }
+        
+        // Show next button after 1 second
+        setTimeout(() => {
+            if (nextButton) {
+                nextButton.style.opacity = '1';
+                nextButton.style.pointerEvents = 'auto';
+            }
+        }, 1000);
     }
     
     hideFeedback() {
         const feedback = document.getElementById('feedback');
+        const nextButton = document.getElementById('next-question');
+        
         if (feedback) {
             feedback.classList.remove('show');
+        }
+        
+        // Reset next button state
+        if (nextButton) {
+            nextButton.style.opacity = '0';
+            nextButton.style.pointerEvents = 'none';
         }
     }
     
