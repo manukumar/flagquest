@@ -518,10 +518,20 @@ body {
     text-align: center;
 }
 
-#next-question {
+.feedback-actions .btn {
+    padding: 12px 30px;
+    font-size: 1rem;
+    min-width: 150px;
     transition: opacity 0.3s ease;
     opacity: 0;
     pointer-events: none;
+    visibility: hidden;
+}
+
+.feedback-actions .btn.show {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    visibility: visible !important;
 }
 
 /* Results Screen */
