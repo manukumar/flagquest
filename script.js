@@ -11,6 +11,14 @@ class FlagQuest {
             currentQuestion: 0
         };
         
+        this.gameMode = 'classic'; // classic, timed
+        this.timedFlags = 10; // number of flags for timed mode
+        this.timer = {
+            startTime: 0,
+            currentTime: 0,
+            interval: null
+        };
+        
         this.currentRoundFlags = [];
         this.currentOptions = [];
         this.currentCorrectFlag = null;
@@ -20,7 +28,11 @@ class FlagQuest {
         this.leaderboardData = {
             accuracy: [],
             streak: [],
-            recent: []
+            recent: [],
+            timed10: [],
+            timed20: [],
+            timed50: [],
+            timedAll: []
         };
         
         this.flags = [
@@ -86,16 +98,28 @@ class FlagQuest {
     
     bindEvents() {
         // Welcome screen events
-        const startButton = document.getElementById('start-game');
+        const startClassicButton = document.getElementById('start-classic');
+        const startTimedButton = document.getElementById('start-timed');
         const playerNameInput = document.getElementById('player-name');
+        const timedPlayerNameInput = document.getElementById('timed-player-name');
         
-        if (startButton) {
-            startButton.addEventListener('click', () => this.startGame());
+        if (startClassicButton) {
+            startClassicButton.addEventListener('click', () => this.startClassicGame());
+        }
+        
+        if (startTimedButton) {
+            startTimedButton.addEventListener('click', () => this.startTimedGame());
         }
         
         if (playerNameInput) {
             playerNameInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') this.startGame();
+                if (e.key === 'Enter') this.startClassicGame();
+            });
+        }
+        
+        if (timedPlayerNameInput) {
+            timedPlayerNameInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') this.startTimedGame();
             });
         }
         
@@ -107,6 +131,12 @@ class FlagQuest {
                 if (!isNaN(index)) {
                     this.handleAnswer(index);
                 }
+            }
+            
+            // Handle timed option selection
+            const timedOption = e.target.closest('.timed-option');
+            if (timedOption) {
+                this.selectTimedOption(timedOption);
             }
             
             // Handle next question button
@@ -121,12 +151,31 @@ class FlagQuest {
                 const tabType = tabBtn.dataset.tab;
                 const screen = this.gameState === 'results' ? 'results' : '';
                 this.switchLeaderboardTab(tabType, screen);
+                // Timed tab logic
+                const subtabs = document.querySelector('.timed-leaderboard-subtabs');
+                if (tabType === 'timed') {
+                    if (subtabs) subtabs.style.display = 'flex';
+                    // Show default timed10 leaderboard
+                    this.switchTimedLeaderboard('timed10', screen);
+                } else {
+                    if (subtabs) subtabs.style.display = 'none';
+                }
+            }
+            // Timed subtab clicks
+            const timedSubtab = e.target.closest('.timed-subtab-btn');
+            if (timedSubtab) {
+                const timedType = timedSubtab.dataset.timed;
+                const screen = this.gameState === 'results' ? 'results' : '';
+                document.querySelectorAll('.timed-subtab-btn').forEach(btn => btn.classList.remove('active'));
+                timedSubtab.classList.add('active');
+                this.switchTimedLeaderboard(timedType, screen);
             }
         });
         
         // Results screen events
         const playAgainBtn = document.getElementById('play-again');
         const newGameBtn = document.getElementById('new-game');
+        const backToHomeBtn = document.getElementById('back-to-home');
         
         if (playAgainBtn) {
             playAgainBtn.addEventListener('click', () => this.playAgain());
@@ -134,6 +183,10 @@ class FlagQuest {
         
         if (newGameBtn) {
             newGameBtn.addEventListener('click', () => this.newGame());
+        }
+        
+        if (backToHomeBtn) {
+            backToHomeBtn.addEventListener('click', () => this.backToHome());
         }
         
         // Handle window resize to ensure buttons remain responsive
@@ -164,13 +217,21 @@ class FlagQuest {
         }
         this.gameState = screenName;
         
+        // Always clear name fields when returning to home screen
+        if (screenName === 'welcome') {
+            const playerNameInput = document.getElementById('player-name');
+            const timedPlayerNameInput = document.getElementById('timed-player-name');
+            if (playerNameInput) playerNameInput.value = '';
+            if (timedPlayerNameInput) timedPlayerNameInput.value = '';
+        }
+        
         // Update leaderboard display when showing welcome or results
         if (screenName === 'welcome' || screenName === 'results') {
             this.updateLeaderboardDisplay();
         }
     }
     
-    startGame() {
+    startClassicGame() {
         const playerNameInput = document.getElementById('player-name');
         const playerName = playerNameInput ? playerNameInput.value.trim() : '';
         
@@ -179,11 +240,89 @@ class FlagQuest {
             return;
         }
         
+        this.gameMode = 'classic';
         this.player.name = playerName;
+        this.player.questionsPerRound = 10;
         this.resetGame();
         this.showScreen('game');
         this.updateGameDisplay();
         this.askQuestion();
+    }
+    
+    startTimedGame() {
+        const timedPlayerNameInput = document.getElementById('timed-player-name');
+        const playerName = timedPlayerNameInput ? timedPlayerNameInput.value.trim() : '';
+        
+        if (!playerName) {
+            alert('Please enter your name!');
+            return;
+        }
+        
+        this.gameMode = 'timed';
+        this.player.name = playerName;
+        this.player.questionsPerRound = this.timedFlags;
+        this.resetGame();
+        this.startTimer();
+        this.showScreen('game');
+        this.updateGameDisplay();
+        this.askQuestion();
+    }
+    
+    selectTimedOption(optionElement) {
+        // Remove previous selection
+        document.querySelectorAll('.timed-option').forEach(option => {
+            option.classList.remove('selected');
+        });
+        
+        // Select new option
+        optionElement.classList.add('selected');
+        
+        // Get number of flags
+        const flags = optionElement.dataset.flags;
+        this.timedFlags = flags === 'all' ? this.flags.length : parseInt(flags);
+        
+        // Show timed input with smooth transition
+        const timedInput = document.getElementById('timed-input');
+        if (timedInput) {
+            timedInput.style.display = 'flex';
+            // Trigger smooth transition
+            setTimeout(() => {
+                timedInput.classList.add('show');
+            }, 10);
+        }
+    }
+    
+    startTimer() {
+        this.timer.startTime = Date.now();
+        this.timer.interval = setInterval(() => {
+            this.timer.currentTime = Date.now() - this.timer.startTime;
+            this.updateTimerDisplay();
+        }, 10); // Update every 10ms for millisecond precision
+        
+        // Show timer in UI
+        const timerStat = document.getElementById('timer-stat');
+        if (timerStat) {
+            timerStat.style.display = 'block';
+        }
+    }
+    
+    stopTimer() {
+        if (this.timer.interval) {
+            clearInterval(this.timer.interval);
+            this.timer.interval = null;
+        }
+    }
+    
+    updateTimerDisplay() {
+        const timerDisplay = document.getElementById('timer-display');
+        if (timerDisplay) {
+            const time = this.timer.currentTime;
+            const minutes = Math.floor(time / 60000);
+            const seconds = Math.floor((time % 60000) / 1000);
+            const milliseconds = Math.floor((time % 1000) / 10);
+            
+            timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
+        }
     }
     
     resetGame() {
@@ -194,6 +333,15 @@ class FlagQuest {
         this.currentRoundFlags = [];
         this.hideFeedback();
         this.enableButtons();
+        
+        // Reset timer for timed mode
+        if (this.gameMode === 'timed') {
+            this.stopTimer();
+            const timerStat = document.getElementById('timer-stat');
+            if (timerStat) {
+                timerStat.style.display = 'none';
+            }
+        }
     }
     
     shuffleArray(array) {
@@ -228,29 +376,28 @@ class FlagQuest {
             btn.style.pointerEvents = 'auto';
         });
         
-        // Display flag with smooth transition
+        // Display flag with smooth transition (restore previous version)
         const flagElement = document.getElementById('flag-emoji');
         if (flagElement) {
-            // Add a brief fade effect for the flag change
+            // Fade out the flag
             flagElement.style.opacity = '0.7';
             setTimeout(() => {
                 flagElement.textContent = currentFlag.flag;
                 flagElement.style.opacity = '1';
+                // Display options with smooth transition (at the same time as flag)
+                this.currentOptions.forEach((option, index) => {
+                    const btn = document.querySelector(`[data-index="${index}"]`);
+                    if (btn) {
+                        const optionText = btn.querySelector('.option-text');
+                        if (optionText) {
+                            optionText.textContent = `${option.country} (${option.code})`;
+                        }
+                        btn.className = 'option-btn';
+                        btn.style.pointerEvents = 'auto';
+                    }
+                });
             }, 100);
         }
-        
-        // Display options with smooth transition
-        this.currentOptions.forEach((option, index) => {
-            const btn = document.querySelector(`[data-index="${index}"]`);
-            if (btn) {
-                const optionText = btn.querySelector('.option-text');
-                if (optionText) {
-                    optionText.textContent = `${option.country} (${option.code})`;
-                }
-                btn.className = 'option-btn';
-                btn.style.pointerEvents = 'auto';
-            }
-        });
         
         // Ensure feedback window is collapsed and hidden
         this.hideFeedback();
@@ -285,8 +432,23 @@ class FlagQuest {
         // Update score
         this.updateScore(correct);
         
-        // Show feedback with next button
-        this.showFeedback(correct, selectedOption);
+        // Handle differently for timed mode
+        if (this.gameMode === 'timed') {
+            setTimeout(() => {
+                this.player.currentQuestion++;
+                console.log('Timed mode: currentQuestion incremented to', this.player.currentQuestion, 'of', this.player.questionsPerRound);
+                if (this.player.currentQuestion >= this.player.questionsPerRound) {
+                    this.stopTimer();
+                    console.log('Timed mode: calling showResults()');
+                    this.showResults();
+                } else {
+                    this.askQuestion();
+                }
+            }, 1000);
+        } else {
+            // Show feedback with next button for classic mode
+            this.showFeedback(correct, selectedOption);
+        }
     }
     
     updateScore(correct) {
@@ -405,6 +567,15 @@ class FlagQuest {
     }
     
     showResults() {
+        console.log('showResults called. gameMode:', this.gameMode);
+        if (this.gameMode === 'timed') {
+            this.showTimedResults();
+        } else {
+            this.showClassicResults();
+        }
+    }
+    
+    showClassicResults() {
         const roundCorrect = this.player.score - (this.player.totalQuestions - this.player.questionsPerRound);
         const roundAccuracy = ((roundCorrect / this.player.questionsPerRound) * 100).toFixed(1);
         const overallAccuracy = ((this.player.score / this.player.totalQuestions) * 100).toFixed(1);
@@ -442,6 +613,78 @@ class FlagQuest {
         
         // Save to leaderboard
         this.saveToLeaderboard(roundCorrect, roundAccuracy, this.player.bestStreak);
+        
+        // Hide back to home button for classic mode only
+        if (this.gameMode === 'classic') {
+            const backToHomeBtn = document.getElementById('back-to-home');
+            if (backToHomeBtn) {
+                backToHomeBtn.style.display = 'none';
+            }
+        }
+        
+        this.showScreen('results');
+    }
+    
+    showTimedResults() {
+        const totalTime = this.timer.currentTime;
+        const minutes = Math.floor(totalTime / 60000);
+        const seconds = Math.floor((totalTime % 60000) / 1000);
+        const milliseconds = Math.floor((totalTime % 1000));
+        const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
+        
+        const accuracy = ((this.player.score / this.player.questionsPerRound) * 100).toFixed(1);
+        
+        // Update results display for timed mode
+        const elements = {
+            'round-correct': this.player.score,
+            'round-accuracy': `${accuracy}%`,
+            'best-streak': `${timeString}`,
+            'total-correct': this.player.questionsPerRound,
+            'total-questions': `${accuracy}%`,
+            'overall-accuracy': timeString
+        };
+        
+        Object.entries(elements).forEach(([id, value]) => {
+            const element = document.getElementById(id);
+            if (element) element.textContent = value;
+        });
+        
+        // Update labels for timed mode
+        const labels = {
+            'round-correct': 'Correct',
+            'round-accuracy': 'Accuracy',
+            'best-streak': 'Time',
+            'total-correct': 'Total Flags',
+            'total-questions': 'Accuracy',
+            'overall-accuracy': 'Time'
+        };
+        
+        // Performance message for timed mode
+        const performanceMessage = document.getElementById('performance-message');
+        if (performanceMessage) {
+            if (accuracy >= 90) {
+                performanceMessage.textContent = `🏆 Amazing speed! ${timeString} with ${accuracy}% accuracy!`;
+            } else if (accuracy >= 75) {
+                performanceMessage.textContent = `🥇 Great time! ${timeString} with ${accuracy}% accuracy!`;
+            } else if (accuracy >= 60) {
+                performanceMessage.textContent = `🥈 Good speed! ${timeString} with ${accuracy}% accuracy!`;
+            } else if (accuracy >= 40) {
+                performanceMessage.textContent = `🥉 Nice effort! ${timeString} with ${accuracy}% accuracy!`;
+            } else {
+                performanceMessage.textContent = `📚 Keep practicing! ${timeString} with ${accuracy}% accuracy!`;
+            }
+        }
+        
+        // Save to timed leaderboard
+        this.saveToTimedLeaderboard(totalTime, accuracy);
+        
+        // Show back to home button for timed mode BEFORE showing screen
+        const backToHomeBtn = document.getElementById('back-to-home');
+        if (backToHomeBtn) {
+            backToHomeBtn.style.display = 'inline-block';
+            backToHomeBtn.style.visibility = 'visible';
+            backToHomeBtn.style.opacity = '1';
+        }
         
         this.showScreen('results');
     }
@@ -493,9 +736,47 @@ class FlagQuest {
         this.saveLeaderboard();
     }
     
+    saveToTimedLeaderboard(time, accuracy) {
+        const gameEntry = {
+            name: this.player.name,
+            time: time,
+            accuracy: parseFloat(accuracy),
+            flags: this.player.questionsPerRound,
+            date: new Date().toISOString(),
+            timestamp: Date.now()
+        };
+        
+        // Determine which timed leaderboard to save to
+        let leaderboardKey;
+        switch (this.player.questionsPerRound) {
+            case 10:
+                leaderboardKey = 'timed10';
+                break;
+            case 20:
+                leaderboardKey = 'timed20';
+                break;
+            case 50:
+                leaderboardKey = 'timed50';
+                break;
+            default:
+                leaderboardKey = 'timedAll';
+                break;
+        }
+        
+        // Ensure the leaderboard array exists
+        if (!this.leaderboardData[leaderboardKey]) {
+            this.leaderboardData[leaderboardKey] = [];
+        }
+        // Add to timed leaderboard (keep top 5, sorted by time)
+        this.leaderboardData[leaderboardKey].push(gameEntry);
+        this.leaderboardData[leaderboardKey].sort((a, b) => a.time - b.time);
+        this.leaderboardData[leaderboardKey] = this.leaderboardData[leaderboardKey].slice(0, 5);
+        
+        this.saveLeaderboard();
+    }
+    
     switchLeaderboardTab(tabType, screen = '') {
         const prefix = screen ? `${screen}-` : '';
-        
         // Update tab buttons
         document.querySelectorAll(`.tab-btn[data-tab="${tabType}"]`).forEach(btn => {
             btn.classList.add('active');
@@ -503,9 +784,8 @@ class FlagQuest {
         document.querySelectorAll(`.tab-btn:not([data-tab="${tabType}"])`).forEach(btn => {
             btn.classList.remove('active');
         });
-        
         // Hide all leaderboard containers first
-        const allLeaderboards = ['accuracy', 'streak', 'recent'];
+        const allLeaderboards = ['accuracy', 'timed10', 'timed20', 'timed50', 'timedAll'];
         allLeaderboards.forEach(type => {
             const leaderboardId = `${prefix}${type}-leaderboard`;
             const leaderboard = document.getElementById(leaderboardId);
@@ -513,28 +793,58 @@ class FlagQuest {
                 leaderboard.classList.remove('active');
             }
         });
-        
         // Show only the active leaderboard container
-        const activeLeaderboardId = `${prefix}${tabType}-leaderboard`;
+        let activeLeaderboardId;
+        if (tabType === 'timed') {
+            // Show timed10 by default
+            activeLeaderboardId = `${prefix}timed10-leaderboard`;
+        } else {
+            activeLeaderboardId = `${prefix}${tabType}-leaderboard`;
+        }
         const activeLeaderboard = document.getElementById(activeLeaderboardId);
         if (activeLeaderboard) {
             activeLeaderboard.classList.add('active');
         }
-        
         // Update the content of the active leaderboard list
-        const listId = screen ? `${screen}-${tabType}-list` : `${tabType}-list`;
-        this.updateLeaderboardList(tabType, listId);
+        let listId;
+        if (tabType === 'timed') {
+            listId = screen ? `${screen}-timed10-list` : `timed10-list`;
+        } else {
+            listId = screen ? `${screen}-${tabType}-list` : `${tabType}-list`;
+        }
+        this.updateLeaderboardList(tabType === 'timed' ? 'timed10' : tabType, listId);
+    }
+    
+    switchTimedLeaderboard(timedType, screen = '') {
+        const prefix = screen ? `${screen}-` : '';
+        // Hide all timed leaderboards
+        ['timed10', 'timed20', 'timed50', 'timedAll'].forEach(type => {
+            const leaderboardId = `${prefix}${type}-leaderboard`;
+            const leaderboard = document.getElementById(leaderboardId);
+            if (leaderboard) leaderboard.classList.remove('active');
+        });
+        // Show selected timed leaderboard
+        const activeLeaderboardId = `${prefix}${timedType}-leaderboard`;
+        const activeLeaderboard = document.getElementById(activeLeaderboardId);
+        if (activeLeaderboard) activeLeaderboard.classList.add('active');
+        // Update the content
+        const listId = screen ? `${screen}-${timedType}-list` : `${timedType}-list`;
+        this.updateLeaderboardList(timedType, listId);
     }
     
     updateLeaderboardDisplay() {
         this.updateLeaderboardList('accuracy', 'accuracy-list');
-        this.updateLeaderboardList('streak', 'streak-list');
-        this.updateLeaderboardList('recent', 'recent-list');
-        
+        // Timed leaderboards
+        this.updateLeaderboardList('timed10', 'timed10-list');
+        this.updateLeaderboardList('timed20', 'timed20-list');
+        this.updateLeaderboardList('timed50', 'timed50-list');
+        this.updateLeaderboardList('timedAll', 'timedAll-list');
         // Also update results screen leaderboards
         this.updateLeaderboardList('accuracy', 'results-accuracy-list');
-        this.updateLeaderboardList('streak', 'results-streak-list');
-        this.updateLeaderboardList('recent', 'results-recent-list');
+        this.updateLeaderboardList('timed10', 'results-timed10-list');
+        this.updateLeaderboardList('timed20', 'results-timed20-list');
+        this.updateLeaderboardList('timed50', 'results-timed50-list');
+        this.updateLeaderboardList('timedAll', 'results-timedAll-list');
     }
     
     updateLeaderboardList(type, listId) {
@@ -547,39 +857,57 @@ class FlagQuest {
         
         if (entries.length === 0) {
             listElement.innerHTML = '<div class="leaderboard-entry"><div class="entry-info">No entries yet. Be the first!</div></div>';
-            return;
+        } else {
+            entries.forEach((entry, index) => {
+                const entryElement = document.createElement('div');
+                entryElement.className = 'leaderboard-entry';
+                
+                const rank = index + 1;
+                const rankClass = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
+                
+                let scoreText = '';
+                let detailsText = '';
+                if (type === 'accuracy') {
+                    scoreText = `${entry.accuracy}%`;
+                    detailsText = scoreText;
+                } else if (type === 'timed10' || type === 'timed20' || type === 'timed50' || type === 'timedAll') {
+                    // Format time as mm:ss.mmm
+                    const totalTime = entry.time;
+                    const minutes = Math.floor(totalTime / 60000);
+                    const seconds = Math.floor((totalTime % 60000) / 1000);
+                    const milliseconds = Math.floor((totalTime % 1000));
+                    const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
+                    scoreText = timeString;
+                    detailsText = `${timeString} (${entry.accuracy}% accuracy)`;
+                }
+                
+                const date = new Date(entry.date).toLocaleDateString();
+                
+                entryElement.innerHTML = `
+                    <div class="entry-rank ${rankClass}">${rank}</div>
+                    <div class="entry-info">
+                        <div class="entry-name">${entry.name}</div>
+                        <div class="entry-details">${detailsText}</div>
+                        <div class="entry-date">${date}</div>
+                    </div>
+                    <div class="entry-score">${scoreText}</div>
+                `;
+                
+                listElement.appendChild(entryElement);
+            });
         }
         
-        entries.forEach((entry, index) => {
-            const entryElement = document.createElement('div');
-            entryElement.className = 'leaderboard-entry';
-            
-            const rank = index + 1;
-            const rankClass = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
-            
-            let scoreText = '';
-            if (type === 'accuracy') {
-                scoreText = `${entry.accuracy}%`;
-            } else if (type === 'streak') {
-                scoreText = `${entry.bestStreak} streak`;
-            } else if (type === 'recent') {
-                scoreText = `${entry.correct}/10 (${entry.accuracy}%)`;
-            }
-            
-            const date = new Date(entry.date).toLocaleDateString();
-            
-            entryElement.innerHTML = `
-                <div class="entry-rank ${rankClass}">${rank}</div>
-                <div class="entry-info">
-                    <div class="entry-name">${entry.name}</div>
-                    <div class="entry-details">${scoreText}</div>
-                    <div class="entry-date">${date}</div>
-                </div>
-                <div class="entry-score">${scoreText}</div>
-            `;
-            
-            listElement.appendChild(entryElement);
-        });
+        // Move the 'More entries...' message outside the scroll area
+        let footer = listElement.nextElementSibling;
+        if (footer && footer.classList.contains('leaderboard-footer')) {
+            footer.remove();
+        }
+        if (entries.length < 5) {
+            const messageElement = document.createElement('div');
+            messageElement.className = 'leaderboard-footer';
+            messageElement.innerHTML = 'More entries will appear as more people play!';
+            listElement.parentNode.insertBefore(messageElement, listElement.nextSibling);
+        }
     }
     
     playAgain() {
@@ -595,6 +923,33 @@ class FlagQuest {
         if (playerNameInput) {
             playerNameInput.value = '';
         }
+    }
+    
+    backToHome() {
+        this.resetGame();
+        this.showScreen('welcome');
+        
+        // Clear all input fields
+        const playerNameInput = document.getElementById('player-name');
+        const timedPlayerNameInput = document.getElementById('timed-player-name');
+        if (playerNameInput) {
+            playerNameInput.value = '';
+        }
+        if (timedPlayerNameInput) {
+            timedPlayerNameInput.value = '';
+        }
+        
+        // Reset timed input visibility
+        const timedInput = document.getElementById('timed-input');
+        if (timedInput) {
+            timedInput.style.display = 'none';
+            timedInput.classList.remove('show');
+        }
+        
+        // Clear timed option selection
+        document.querySelectorAll('.timed-option').forEach(option => {
+            option.classList.remove('selected');
+        });
     }
 }
 

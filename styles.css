@@ -126,6 +126,107 @@ body {
     font-size: 0.9rem;
 }
 
+.game-modes {
+    margin-top: 30px;
+}
+
+.game-modes h3 {
+    text-align: center;
+    color: #4a5568;
+    margin-bottom: 25px;
+    font-size: 1.4rem;
+}
+
+.mode-selection {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+}
+
+.mode-card {
+    background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+    border: 2px solid #e2e8f0;
+    border-radius: 15px;
+    padding: 25px;
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.mode-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.mode-card h4 {
+    color: #4a5568;
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+}
+
+.mode-card p {
+    color: #718096;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+}
+
+.timed-options {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.timed-option {
+    padding: 10px 15px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    background: white;
+    color: #4a5568;
+    font-size: 0.85rem;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.timed-option:hover {
+    border-color: #667eea;
+    background: #f7fafc;
+}
+
+.timed-option.selected {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-color: #667eea;
+}
+
+.mode-input {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
+}
+
+#timed-input {
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+#timed-input.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
 .player-input {
     display: flex;
     flex-direction: column;
@@ -150,6 +251,35 @@ body {
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
+#timed-player-name {
+    width: 100%;
+    max-width: 300px;
+    padding: 15px 20px;
+    border: 3px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-family: inherit;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+#timed-player-name:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Timed mode button styling */
+#start-timed {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+#start-timed:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
 /* Leaderboard Styles */
 .leaderboard-section {
     background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
@@ -157,6 +287,7 @@ body {
     padding: 25px;
     border: 2px solid #e2e8f0;
     height: fit-content;
+    min-height: 600px;
 }
 
 .leaderboard-section h3 {
@@ -201,7 +332,7 @@ body {
 
 .leaderboard-content {
     position: relative;
-    min-height: 300px;
+    min-height: 400px;
 }
 
 .leaderboard {
@@ -222,6 +353,24 @@ body {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    max-height: 370px;
+    overflow-y: auto;
+    position: relative;
+}
+
+/* Remove the gradient overlay */
+.leaderboard-list::after {
+    display: none;
+}
+
+.leaderboard-footer {
+    margin-top: 10px;
+    text-align: center;
+    color: #a0aec0;
+    font-size: 0.9rem;
+    background: transparent;
+    border-radius: 0;
+    padding: 10px 0;
 }
 
 .leaderboard-entry {
@@ -363,6 +512,13 @@ body {
 .stat span:last-child {
     font-size: 1.2rem;
     font-weight: 700;
+}
+
+/* Timer display styling to prevent jittering */
+#timer-display {
+    font-family: 'Courier New', monospace;
+    min-width: 90px;
+    text-align: center;
 }
 
 .game-content {
@@ -747,4 +903,31 @@ body {
     .entry-info {
         margin: 0;
     }
+}
+
+.timed-leaderboard-subtabs {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 10px;
+}
+.timed-subtab-btn {
+    flex: 1;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 8px;
+    background: #e2e8f0;
+    color: #718096;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+.timed-subtab-btn.active {
+    background: white;
+    color: #4a5568;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+.timed-subtab-btn:hover:not(.active) {
+    color: #4a5568;
 } 
