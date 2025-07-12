@@ -38,9 +38,32 @@
                                 <p>185 countries, scoring, and country facts</p>
                             </div>
                         </div>
-                        <div class="player-input">
-                            <input type="text" id="player-name" placeholder="Enter your name" maxlength="20">
-                            <button id="start-game" class="btn btn-primary">Start Game</button>
+                        <div class="game-modes">
+                            <h3>🎮 Choose Your Mode</h3>
+                            <div class="mode-selection">
+                                <div class="mode-card" id="classic-mode">
+                                    <h4>🏆 Classic Mode</h4>
+                                    <p>10 questions, take your time, focus on accuracy</p>
+                                    <div class="mode-input">
+                                        <input type="text" id="player-name" placeholder="Enter your name" maxlength="20">
+                                        <button id="start-classic" class="btn btn-primary">Start Classic</button>
+                                    </div>
+                                </div>
+                                <div class="mode-card" id="timed-mode">
+                                    <h4>⏱️ Timed Mode</h4>
+                                    <p>Race against the clock, speed matters!</p>
+                                    <div class="timed-options">
+                                        <button class="timed-option" data-flags="10">10 Flags</button>
+                                        <button class="timed-option" data-flags="20">20 Flags</button>
+                                        <button class="timed-option" data-flags="50">50 Flags</button>
+                                        <button class="timed-option" data-flags="all">All Flags</button>
+                                    </div>
+                                    <div class="mode-input" id="timed-input" style="display: none;">
+                                        <input type="text" id="timed-player-name" placeholder="Enter your name" maxlength="20">
+                                        <button id="start-timed" class="btn btn-secondary">Start Timed</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
@@ -48,9 +71,14 @@
                         <div class="leaderboard-section">
                             <h3>🏆 Leaderboard</h3>
                             <div class="leaderboard-tabs">
-                                <button class="tab-btn active" data-tab="accuracy">Best Accuracy</button>
-                                <button class="tab-btn" data-tab="streak">Best Streak</button>
-                                <button class="tab-btn" data-tab="recent">Recent Games</button>
+                                <button class="tab-btn active" data-tab="accuracy">Classic</button>
+                                <button class="tab-btn" data-tab="timed">Timed</button>
+                            </div>
+                            <div class="timed-leaderboard-subtabs" style="display: none; margin-bottom: 10px; gap: 5px;">
+                                <button class="timed-subtab-btn active" data-timed="timed10">10 Flags</button>
+                                <button class="timed-subtab-btn" data-timed="timed20">20 Flags</button>
+                                <button class="timed-subtab-btn" data-timed="timed50">50 Flags</button>
+                                <button class="timed-subtab-btn" data-timed="timedAll">All Flags</button>
                             </div>
                             <div class="leaderboard-content">
                                 <div id="accuracy-leaderboard" class="leaderboard active">
@@ -58,14 +86,24 @@
                                         <!-- Accuracy leaderboard entries will be populated here -->
                                     </div>
                                 </div>
-                                <div id="streak-leaderboard" class="leaderboard">
-                                    <div class="leaderboard-list" id="streak-list">
-                                        <!-- Streak leaderboard entries will be populated here -->
+                                <div id="timed10-leaderboard" class="leaderboard">
+                                    <div class="leaderboard-list" id="timed10-list">
+                                        <!-- Timed 10 leaderboard entries will be populated here -->
                                     </div>
                                 </div>
-                                <div id="recent-leaderboard" class="leaderboard">
-                                    <div class="leaderboard-list" id="recent-list">
-                                        <!-- Recent games will be populated here -->
+                                <div id="timed20-leaderboard" class="leaderboard">
+                                    <div class="leaderboard-list" id="timed20-list">
+                                        <!-- Timed 20 leaderboard entries will be populated here -->
+                                    </div>
+                                </div>
+                                <div id="timed50-leaderboard" class="leaderboard">
+                                    <div class="leaderboard-list" id="timed50-list">
+                                        <!-- Timed 50 leaderboard entries will be populated here -->
+                                    </div>
+                                </div>
+                                <div id="timedAll-leaderboard" class="leaderboard">
+                                    <div class="leaderboard-list" id="timedAll-list">
+                                        <!-- Timed All leaderboard entries will be populated here -->
                                     </div>
                                 </div>
                             </div>
@@ -93,6 +131,10 @@
                     <div class="stat">
                         <span class="stat-label">Streak</span>
                         <span id="current-streak">0</span>
+                    </div>
+                    <div class="stat" id="timer-stat" style="display: none;">
+                        <span class="stat-label">Time</span>
+                        <span id="timer-display">00:00.000</span>
                     </div>
                 </div>
             </div>
@@ -167,24 +209,7 @@
                                     </div>
                                     <div class="result-stat">
                                         <span class="stat-number" id="best-streak">0</span>
-                                        <span class="stat-label">Best Streak</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="result-card">
-                                <h3>Overall Performance</h3>
-                                <div class="result-stats">
-                                    <div class="result-stat">
-                                        <span class="stat-number" id="total-correct">0</span>
-                                        <span class="stat-label">Total Correct</span>
-                                    </div>
-                                    <div class="result-stat">
-                                        <span class="stat-number" id="total-questions">0</span>
-                                        <span class="stat-label">Total Questions</span>
-                                    </div>
-                                    <div class="result-stat">
-                                        <span class="stat-number" id="overall-accuracy">0%</span>
-                                        <span class="stat-label">Overall Accuracy</span>
+                                        <span class="stat-label">Time</span>
                                     </div>
                                 </div>
                             </div>
@@ -193,6 +218,7 @@
                         <div class="action-buttons">
                             <button id="play-again" class="btn btn-primary">Play Another Round</button>
                             <button id="new-game" class="btn btn-secondary">New Game</button>
+                            <button id="back-to-home" class="btn btn-secondary" style="display: none;">Back to Home</button>
                         </div>
                     </div>
                     
@@ -200,9 +226,14 @@
                         <div class="leaderboard-section">
                             <h3>🏆 Updated Leaderboard</h3>
                             <div class="leaderboard-tabs">
-                                <button class="tab-btn active" data-tab="accuracy">Best Accuracy</button>
-                                <button class="tab-btn" data-tab="streak">Best Streak</button>
-                                <button class="tab-btn" data-tab="recent">Recent Games</button>
+                                <button class="tab-btn active" data-tab="accuracy">Classic</button>
+                                <button class="tab-btn" data-tab="timed">Timed</button>
+                            </div>
+                            <div class="timed-leaderboard-subtabs" style="display: none; margin-bottom: 10px; gap: 5px;">
+                                <button class="timed-subtab-btn active" data-timed="timed10">10 Flags</button>
+                                <button class="timed-subtab-btn" data-timed="timed20">20 Flags</button>
+                                <button class="timed-subtab-btn" data-timed="timed50">50 Flags</button>
+                                <button class="timed-subtab-btn" data-timed="timedAll">All Flags</button>
                             </div>
                             <div class="leaderboard-content">
                                 <div id="results-accuracy-leaderboard" class="leaderboard active">
@@ -210,14 +241,24 @@
                                         <!-- Accuracy leaderboard entries will be populated here -->
                                     </div>
                                 </div>
-                                <div id="results-streak-leaderboard" class="leaderboard">
-                                    <div class="leaderboard-list" id="results-streak-list">
-                                        <!-- Streak leaderboard entries will be populated here -->
+                                <div id="results-timed10-leaderboard" class="leaderboard">
+                                    <div class="leaderboard-list" id="results-timed10-list">
+                                        <!-- Timed 10 leaderboard entries will be populated here -->
                                     </div>
                                 </div>
-                                <div id="results-recent-leaderboard" class="leaderboard">
-                                    <div class="leaderboard-list" id="results-recent-list">
-                                        <!-- Recent games will be populated here -->
+                                <div id="results-timed20-leaderboard" class="leaderboard">
+                                    <div class="leaderboard-list" id="results-timed20-list">
+                                        <!-- Timed 20 leaderboard entries will be populated here -->
+                                    </div>
+                                </div>
+                                <div id="results-timed50-leaderboard" class="leaderboard">
+                                    <div class="leaderboard-list" id="results-timed50-list">
+                                        <!-- Timed 50 leaderboard entries will be populated here -->
+                                    </div>
+                                </div>
+                                <div id="results-timedAll-leaderboard" class="leaderboard">
+                                    <div class="leaderboard-list" id="results-timedAll-list">
+                                        <!-- Timed All leaderboard entries will be populated here -->
                                     </div>
                                 </div>
                             </div>
