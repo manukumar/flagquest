@@ -24,44 +24,50 @@
                 
                 <div class="welcome-layout">
                     <div class="welcome-left">
-                        <div class="game-info">
-                            <div class="info-card">
-                                <h3>🎯 Objective</h3>
-                                <p>Identify which country each flag belongs to</p>
+                        <div class="game-setup-section">
+                            <h3>🎮 Game Setup</h3>
+                            
+                            <!-- Player Name Section -->
+                            <div class="player-name-section">
+                                <label for="player-name" class="name-label">Player Name</label>
+                                <div class="name-input-container">
+                                    <input type="text" id="player-name" placeholder="Enter your name" maxlength="20">
+                                </div>
                             </div>
-                            <div class="info-card">
-                                <h3>📝 How to Play</h3>
-                                <p>Choose the correct country from 4 options</p>
-                            </div>
-                            <div class="info-card">
-                                <h3>🏆 Features</h3>
-                                <p>185 countries, scoring, and country facts</p>
-                            </div>
-                        </div>
-                        <div class="game-modes">
-                            <h3>🎮 Choose Your Mode</h3>
-                            <div class="mode-selection">
-                                <div class="mode-card" id="classic-mode">
-                                    <h4>🏆 Classic Mode</h4>
-                                    <p>10 questions, take your time, focus on accuracy</p>
-                                    <div class="mode-input">
-                                        <input type="text" id="player-name" placeholder="Enter your name" maxlength="20">
-                                        <button id="start-classic" class="btn btn-primary">Start Classic</button>
+                            
+                            <!-- Game Modes Section -->
+                            <div class="game-modes">
+                                <h4>Choose Your Mode</h4>
+                                <div class="mode-selection">
+                                    <div class="mode-card" id="classic-mode">
+                                        <h4>🏆 Classic Mode</h4>
+                                        <p>10 questions, take your time, focus on accuracy</p>
+                                        <div class="mode-input">
+                                            <button id="start-classic" class="btn btn-primary">Start</button>
+                                        </div>
+                                    </div>
+                                    <div class="mode-card" id="timed-mode">
+                                        <h4>⏱️ Timed Mode</h4>
+                                        <p>Race against the clock, speed matters!</p>
+                                        <div class="timed-options">
+                                            <button class="timed-option" data-flags="10">10 Flags</button>
+                                            <button class="timed-option" data-flags="20">20 Flags</button>
+                                            <button class="timed-option" data-flags="50">50 Flags</button>
+                                            <button class="timed-option" data-flags="all">All Flags</button>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="mode-card" id="timed-mode">
-                                    <h4>⏱️ Timed Mode</h4>
-                                    <p>Race against the clock, speed matters!</p>
-                                    <div class="timed-options">
-                                        <button class="timed-option" data-flags="10">10 Flags</button>
-                                        <button class="timed-option" data-flags="20">20 Flags</button>
-                                        <button class="timed-option" data-flags="50">50 Flags</button>
-                                        <button class="timed-option" data-flags="all">All Flags</button>
-                                    </div>
-                                    <div class="mode-input" id="timed-input" style="display: none;">
-                                        <input type="text" id="timed-player-name" placeholder="Enter your name" maxlength="20">
-                                        <button id="start-timed" class="btn btn-secondary">Start Timed</button>
-                                    </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Game Instructions moved below mode selection -->
+                        <div class="game-info">
+                            <div class="info-cards">
+                                <div class="info-card">
+                                    <h3>📖 How to Play</h3>
+                                    <p><strong>🎯 Objective:</strong> Identify which country each flag belongs to</p>
+                                    <p><strong>📝 Gameplay:</strong> Choose the correct country from 4 options</p>
+                                    <p><strong>🏆 Features:</strong> 185 countries, scoring, and country facts</p>
                                 </div>
                             </div>
                         </div>
@@ -126,7 +132,7 @@
                     </div>
                     <div class="stat">
                         <span class="stat-label">Question</span>
-                        <span id="question-number">1</span>/10
+                        <span id="question-number">1</span>/<span id="total-questions">10</span>
                     </div>
                     <div class="stat">
                         <span class="stat-label">Streak</span>

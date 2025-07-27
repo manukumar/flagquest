@@ -99,27 +99,23 @@ class FlagQuest {
     bindEvents() {
         // Welcome screen events
         const startClassicButton = document.getElementById('start-classic');
-        const startTimedButton = document.getElementById('start-timed');
         const playerNameInput = document.getElementById('player-name');
-        const timedPlayerNameInput = document.getElementById('timed-player-name');
         
         if (startClassicButton) {
             startClassicButton.addEventListener('click', () => this.startClassicGame());
         }
         
-        if (startTimedButton) {
-            startTimedButton.addEventListener('click', () => this.startTimedGame());
-        }
-        
         if (playerNameInput) {
             playerNameInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') this.startClassicGame();
-            });
-        }
-        
-        if (timedPlayerNameInput) {
-            timedPlayerNameInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') this.startTimedGame();
+                if (e.key === 'Enter') {
+                    // Check if timed mode is selected, otherwise default to classic
+                    const selectedTimedOption = document.querySelector('.timed-option.selected');
+                    if (selectedTimedOption) {
+                        this.startTimedGame();
+                    } else {
+                        this.startClassicGame();
+                    }
+                }
             });
         }
         
@@ -217,12 +213,10 @@ class FlagQuest {
         }
         this.gameState = screenName;
         
-        // Always clear name fields when returning to home screen
+        // Always clear name field when returning to home screen
         if (screenName === 'welcome') {
             const playerNameInput = document.getElementById('player-name');
-            const timedPlayerNameInput = document.getElementById('timed-player-name');
             if (playerNameInput) playerNameInput.value = '';
-            if (timedPlayerNameInput) timedPlayerNameInput.value = '';
         }
         
         // Update leaderboard display when showing welcome or results
@@ -250,8 +244,8 @@ class FlagQuest {
     }
     
     startTimedGame() {
-        const timedPlayerNameInput = document.getElementById('timed-player-name');
-        const playerName = timedPlayerNameInput ? timedPlayerNameInput.value.trim() : '';
+        const playerNameInput = document.getElementById('player-name');
+        const playerName = playerNameInput ? playerNameInput.value.trim() : '';
         
         if (!playerName) {
             alert('Please enter your name!');
@@ -281,15 +275,8 @@ class FlagQuest {
         const flags = optionElement.dataset.flags;
         this.timedFlags = flags === 'all' ? this.flags.length : parseInt(flags);
         
-        // Show timed input with smooth transition
-        const timedInput = document.getElementById('timed-input');
-        if (timedInput) {
-            timedInput.style.display = 'flex';
-            // Trigger smooth transition
-            setTimeout(() => {
-                timedInput.classList.add('show');
-            }, 10);
-        }
+        // Automatically start the timed game
+        this.startTimedGame();
     }
     
     startTimer() {
@@ -558,11 +545,13 @@ class FlagQuest {
         const playerDisplay = document.getElementById('player-display');
         const currentScore = document.getElementById('current-score');
         const questionNumber = document.getElementById('question-number');
+        const totalQuestions = document.getElementById('total-questions');
         const currentStreak = document.getElementById('current-streak');
         
         if (playerDisplay) playerDisplay.textContent = `Player: ${this.player.name}`;
         if (currentScore) currentScore.textContent = this.player.score;
         if (questionNumber) questionNumber.textContent = this.player.currentQuestion + 1;
+        if (totalQuestions) totalQuestions.textContent = this.player.questionsPerRound;
         if (currentStreak) currentStreak.textContent = this.player.streak;
     }
     
@@ -929,21 +918,10 @@ class FlagQuest {
         this.resetGame();
         this.showScreen('welcome');
         
-        // Clear all input fields
+        // Clear name input field
         const playerNameInput = document.getElementById('player-name');
-        const timedPlayerNameInput = document.getElementById('timed-player-name');
         if (playerNameInput) {
             playerNameInput.value = '';
-        }
-        if (timedPlayerNameInput) {
-            timedPlayerNameInput.value = '';
-        }
-        
-        // Reset timed input visibility
-        const timedInput = document.getElementById('timed-input');
-        if (timedInput) {
-            timedInput.style.display = 'none';
-            timedInput.classList.remove('show');
         }
         
         // Clear timed option selection
